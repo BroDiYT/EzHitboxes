@@ -1,42 +1,38 @@
-package me.bushroot.hb;
+package com.example.hitboxmod;
 
-import me.bushroot.hb.Modules.Hitbox;
-import me.bushroot.hb.Modules.key;
-import net.minecraft.block.Block;
-import net.minecraft.block.Blocks;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.InterModComms;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.event.lifecycle.InterModEnqueueEvent;
-import net.minecraftforge.fml.event.lifecycle.InterModProcessEvent;
-import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import net.minecraft.client.settings.KeyBinding;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraftforge.client.event.InputEvent;
+import net.minecraftforge.fml.client.registry.ClientRegistry;
+import org.lwjgl.glfw.GLFW;
 
-import java.util.stream.Collectors;
-
-// The value here should match an entry in the META-INF/mods.toml file
-@Mod("examplemod")
-public class ExampleMod
-{
-    // Directly reference a log4j logger.
-    private static final Logger LOGGER = LogManager.getLogger();
-
-    public ExampleMod() {
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
-
+@Mod("hitboxmod")
+public class HitboxMod {
+    private static final KeyBinding increaseHitboxKey = new KeyBinding("key.hitboxmod.increase", GLFW.GLFW_KEY_Z, "key.categories.gameplay");
+    private static final KeyBinding decreaseHitboxKey = new KeyBinding("key.hitboxmod.decrease", GLFW.GLFW_KEY_X, "key.categories.gameplay");
+    
+    public HitboxMod() {
         MinecraftForge.EVENT_BUS.register(this);
+        ClientRegistry.registerKeyBinding(increaseHitboxKey);
+        ClientRegistry.registerKeyBinding(decreaseHitboxKey);
     }
 
-    private void setup(final FMLCommonSetupEvent event) {
-        MinecraftForge.EVENT_BUS.register(new key());
-        MinecraftForge.EVENT_BUS.register(new Hitbox());
-        MinecraftForge.EVENT_BUS.register(new gui());
+    @SubscribeEvent
+    public void onKeyInput(InputEvent.KeyInputEvent event) {
+        PlayerEntity player = net.minecraft.client.Minecraft.getInstance().player;
+        if (player != null) {
+            if (increaseHitboxKey.isPressed()) {
+                player.setBoundingBox(player.getBoundingBox().grow(0.5));
+            }
+            if (decreaseHitboxKey.isPressed()) {
+                player.setBoundingBox(player.getBoundingBox().shrink(0.5));
+            }
+        }
     }
 }
-
